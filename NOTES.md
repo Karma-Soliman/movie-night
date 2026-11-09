@@ -28,3 +28,18 @@
 
 #### What is AGENTS.md, and does your app need it to run?
 * It gives instructions to AI coding assistants. No, the app does not need it to run.
+
+#### In the page source, are the movie titles present for `/movies`? For `/movies-client`? Why?
+* Yes for `/movies`, because the server renders the movies. No for `/movies-client`, because it loads them in the browser after the page loads.
+
+#### Without the `force-dynamic` line of Part E, you run `npm run build` again tomorrow, then `npm start`, without changing anything else. What does the "Rendered at" timestamp of `/movies` show, and why?
+* It shows tomorrow's build time, because the page is generated during the build. It stays the same when you refresh.
+
+#### Part E made every request to `/movies` about one second slower. Give one situation where `force-dynamic` is still the right choice, and explain why.
+* When showing live ticket availability, because each request needs the latest data.
+
+#### A classmate sees `[movies] rendered 6 movies` in the browser console and says: "So this code runs in the browser." What do you answer, and how can you prove it?
+* It runs on the server. Next.js can forward server logs to the browser during development. Check the terminal log, or disable JavaScript and reload `/movies`.
+
+#### Which version would you choose for a public movie catalogue that changes once a week, and why?
+* The static server-rendered version, without `force-dynamic`. It loads quickly, includes the titles for search engines, and can be rebuilt when the catalogue changes.
