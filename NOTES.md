@@ -60,3 +60,14 @@
 
 #### 5. Under `npm run dev`, "Loading the movies..." appears when you open `/movies/2`. Under `npm start` it does not, but it still appears on `/movies`. Why?
 * In development, `/movies/2` is rendered on demand. In production, it is already generated at build time. `/movies` uses `force-dynamic`, so it still waits for the one-second data load on each request.
+
+## Lab 4
+
+#### 1. Which seven API calls happen during the build, and why is each movie fetched only once?
+* One call to `/api/movies` gets the IDs, then six calls to `/api/movies/1` through `/api/movies/6` get the movies. Next.js shares identical GET requests between `generateMetadata` and the page during rendering.
+
+#### 2. In break 3, where did `MOVIES_API_KEY` end up, who can read it, and where should it be used instead?
+* It ended up in the generated HTML, so any visitor could read it. The key should only be used in server code, never rendered on the page.
+
+#### 3. Why does Next.js refuse a function prop and a `server-only` import in a Client Component?
+* A normal function cannot be serialized into the data sent from server to browser. A server-only import is blocked because that code must stay on the server.
