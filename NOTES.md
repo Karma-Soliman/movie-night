@@ -71,3 +71,10 @@
 
 #### 3. Why does Next.js refuse a function prop and a `server-only` import in a Client Component?
 * A normal function cannot be serialized into the data sent from server to browser. A server-only import is blocked because that code must stay on the server.
+
+## Lab 4, part 2
+
+| Page | Fetch option | Expected build output |
+|---|---|---|
+| `/movies` | `next: { revalidate: 10 }` | ○ with 10s (ISR) |
+| `/movies/[id]` | `cache: "force-cache"` | ● (SSG) |
