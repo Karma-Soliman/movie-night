@@ -78,3 +78,15 @@
 |---|---|---|
 | `/movies` | `next: { revalidate: 10 }` | ○ with 10s (ISR) |
 | `/movies/[id]` | `cache: "force-cache"` | ● (SSG) |
+
+### Part F: home page timing
+
+| Step | First byte (seconds) | Total (seconds) |
+|---|---|---|
+| 1. Sequential requests, without Suspense | 2.641763 | 2.642621 |
+| 2. Sequential requests, with Suspense | Not recorded | Not recorded |
+| 3. Parallel requests with Promise.all and Suspense | 0.058992 | 1.564175 |
+
+* Step 1 code is in place: the requests run one after the other with `no-store`, without Suspense.
+* The production page returned HTTP 200. Both timings are about 2.5 seconds because the page waits for both requests before sending its HTML.
+* In Step 3, Suspense sends the heading and fallback quickly. Promise.all runs both requests together, reducing the total to about 1.5 seconds.
