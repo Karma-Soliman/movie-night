@@ -74,19 +74,52 @@
 
 ## Lab 4, part 2
 
-| Page | Fetch option | Expected build output |
-|---|---|---|
-| `/movies` | `next: { revalidate: 10 }` | ○ with 10s (ISR) |
-| `/movies/[id]` | `cache: "force-cache"` | ● (SSG) |
+| Page | Fetch option | Expected build output | Actual build output |
+|---|---|---|---|
+| `/movies` | `next: { revalidate: 10 }` | ○ with 10s (ISR) | ○ with 10s revalidate and 1y expire |
+| `/movies/[id]` | `cache: "force-cache"` | ● (SSG) | ● for all six movie pages |
 
 ### Part F: home page timing
 
 | Step | First byte (seconds) | Total (seconds) |
 |---|---|---|
 | 1. Sequential requests, without Suspense | 2.641763 | 2.642621 |
-| 2. Sequential requests, with Suspense | Not recorded | Not recorded |
+| 2. Sequential requests, with Suspense | 0.081710 | 2.592234 |
 | 3. Parallel requests with Promise.all and Suspense | 0.058992 | 1.564175 |
 
-* Step 1 code is in place: the requests run one after the other with `no-store`, without Suspense.
+* In Step 1, the requests ran one after the other with `no-store`, without Suspense.
 * The production page returned HTTP 200. Both timings are about 2.5 seconds because the page waits for both requests before sending its HTML.
 * In Step 3, Suspense sends the heading and fallback quickly. Promise.all runs both requests together, reducing the total to about 1.5 seconds.
+
+### Part H: when the API is down
+
+| Page | What I saw | Why, with the strategy of the page |
+|---|---|---|
+| `/movies` | The movie list still appears. | ISR keeps serving the last good page when regeneration fails. |
+| `/movies/2` | Inception's details and the shortlist button still appear. | SSG serves the page generated during the build, without calling the API. |
+| `/` | An error screen saying "This page couldn't load". | SSR needs fresh movies and votes on each request. With the API stopped, the uncached requests fail. |
+| `/movies-client` | "The movies could not be loaded. Is the Movie API running?" | CSR fetches in the browser, and the failed request triggers the error message. |
+
+* With the API stopped, the app terminal showed `TypeError: fetch failed`, caused by `connect ECONNREFUSED 127.0.0.1:4001`.
+* Building with the API stopped also failed: `Failed to collect page data for /movies`. The build still needs API data to generate pages; previously generated pages can continue working under `npm start`.
+
+### Questions
+
+#### 1. What strategy does each page use, and why?
+
+| Page | Strategy | Actual build output | Why it fits |
+|---|---|---|---|
+| `/` | SSR with streaming | ƒ | Shows fresh votes on each request, while the heading loads quickly. |
+| `/movies` | ISR | ○ with 10s | Keeps the list fast while updating it in the background. |
+| `/movies/[id]` | SSG | ● | Movie details rarely change and can be generated at build time. |
+| `/movies-client` | CSR for the list | ○ | The page shell is prerendered, but the browser loads the movie list after opening it. |
+| `/about` | SSG | ○ | Static information needs no fresh API data. |
+
+#### 2. Which eight API calls happen after clearing the build cache?
+* Two calls to `/api/movies`: one for `generateStaticParams` with `force-cache`, and one for `/movies` with `revalidate: 10`. Then six calls to `/api/movies/1` through `/api/movies/6`. Each movie's metadata and page share the same GET request.
+
+#### 3. What do Suspense and Promise.all improve?
+* Suspense improves the first byte: the heading and fallback arrive before the data. The total stays around 2.5 seconds with sequential requests. Promise.all improves the total to around 1.5 seconds by starting both requests together; the first byte stays fast.
+
+#### 4. What happens when the API is down?
+* The observations and reasons are in the Part H table above.

@@ -2,10 +2,6 @@ import type { Metadata } from "next"
 import { MovieList } from "@/components/movie-list"
 import { getMovies } from "@/lib/movies"
 
-// ISR: prerendered at build time, then regenerated in the background at most
-// every 10 seconds, after a request (○ with "10s" in the build output)
-const movies = await getMovies({ next: { revalidate: 10 } });
-
 export const metadata: Metadata = {
   title: "Movies | Movie Night",
   description: "The movies you can vote for",
