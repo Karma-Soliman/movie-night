@@ -123,3 +123,14 @@
 
 #### 4. What happens when the API is down?
 * The observations and reasons are in the Part H table above.
+
+## Lab 5, part 1
+
+#### 1. Why does `/api/movies/abc` answer 400, and `/api/movies/99` answer 404?
+* `abc` is not a valid numeric ID, so 400 means the request is invalid. `99` is a valid ID format but no movie has that ID, so 404 means the movie was not found.
+
+#### 2. Why does TopMovies call getVotes() directly instead of fetching its own API?
+* TopMovies already runs on the server and can use the data layer directly. Calling its own API would add an unnecessary HTTP request.
+
+#### 3. Why are NEXT_PUBLIC_MOVIES_API_URL and CORS no longer needed? What does POST /api/movies return, and why?
+* The browser now calls `/api/movies` on the same origin as the page, so no separate API address or CORS permission is needed. POST returns 405 Method Not Allowed with an empty body because the route only defines a GET handler.
